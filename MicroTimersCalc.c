@@ -9,40 +9,47 @@ int main(){
     double timer_freq, desired_freq, real_freq;
     
     uint64_t min_PSC, min_ARR;
-    double min_freq_error = 99999999;
+	uint64_t valid_combinations = 0;
+    double min_freq_error;
     double best_freq;
-    
-    printf("Frecuencia del timer sin preescalar: \n");
+    double current_freq_error;
+	
+    printf("Timer frequency without prescaling: \n");
     scanf("%lf",&timer_freq);
     
-    printf("Resolucion en bits del timer (PSC): \n");
+    printf("Prescaling bit resolution (PSC): \n");
     scanf("%ld",&psc_timer_bits);
     
-    printf("Resolucion en bits del timer (ARR): \n");
+    printf("Count-based period bit resolution (ARR): \n");
     scanf("%ld",&arr_timer_bits);
     
-    printf("Frecuencia deseada: \n");
+    printf("Desired frequency: \n");
     scanf("%lf",&desired_freq);
     
     for(PSC = 1 ; PSC < pow(2, psc_timer_bits) ; PSC++){
-            ARR = (timer_freq / PSC) / desired_freq;
-            real_freq = 1 / (ARR * (PSC / timer_freq));
+		ARR = (timer_freq / PSC) / desired_freq;
+		real_freq = 1 / (ARR * (PSC / timer_freq));
             
-            if(ARR < pow(2 , arr_timer_bits)){
-                double current_freq_error = real_freq - desired_freq;
-                if(current_freq_error < min_freq_error &&  current_freq_error >= 0){
-                    min_ARR = ARR;
-                    min_PSC = PSC;
-                    best_freq = real_freq;
-		            min_freq_error = current_freq_error;
-                }    
-                //printf("PSC: %d ARR: %d Real Freq: %lf\n",PSC,ARR,real_freq);    
-            }
-            
-            //printf("PSC: %d ARR: %d Real Freq: %lf\n",PSC,ARR,real_freq);
+		if(ARR < pow(2 , arr_timer_bits)){
+			current_freq_error = real_freq - desired_freq;
+			
+			if((current_freq_error < min_freq_error &&  current_freq_error >= 0) || valid_combinations == 0){
+				min_ARR = ARR;
+				min_PSC = PSC;
+				best_freq = real_freq;
+				min_freq_error = current_freq_error;
+			}        
+			
+			valid_combinations++;
+		}
     }
-    
-    printf("\nPSC: %ld ARR: %ld Real Freq: %lf\n",min_PSC,min_ARR,best_freq);
+	
+    if(valid_combinations != 0){
+		printf("\nPSC: %ld ARR: %ld Real Freq: %0.4lf\n",min_PSC,min_ARR,best_freq);
+	}
+	else{
+		printf("\nNo ARR and PSC values exist for the desired frequency, change the CLK frequency\n");
+	}
 }
 
 
